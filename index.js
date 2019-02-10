@@ -1,7 +1,7 @@
 const word = require("./word")
 const inquirer = require("inquirer");
 
-let randWords = ["talked", "sea", "rice", "yearn", "zucchini"];
+let randWords = ["artichoke", "broccoli", "carrot", "dragonfruit", "eggplant", "fig", "garlic", "horseradish", "kale", "lemon", "mango", "onion", "pumpkin", "raspberry", "spinach", "tomato", "watermelon", "yam", "zucchini"];
 let currentWord = new word();
 
 const maxGuesses = 10;
@@ -9,6 +9,7 @@ let guessesLeft = maxGuesses;
 
 function createWord() {
     let rand = randWords[Math.floor(Math.random() * randWords.length)];
+    currentWord.letters = [];
     currentWord.splitLetters(rand);
     currentWord.displayWord();
 }
@@ -29,8 +30,19 @@ function requestGuess() {
             currentWord.letters.map(x => x.compareChar(res.guess));
             currentWord.displayWord();
             if (checkForEndGame()) {
-                console.log("You win!");
-                //TODO and replay inquirer
+                inquirer.prompt([{
+                    name: "choice",
+                    message: "Play again?",
+                    type: "confirm"
+                }])
+                .then(function(res) {
+                    if(res.choice) {
+                        startGame();
+                    }
+                })
+                .catch(function (err) {
+                    throw err;
+                })
             }
             else {
                 requestGuess();
@@ -53,18 +65,31 @@ function checkGuess(input) {
             return;
         }
     }
+    guessesLeft--;
     console.log("Sorry that's wrong.");
+    console.log(`You have ${guessesLeft} guesses left.`)
 }
 
 function checkForEndGame() {
+    if (guessesLeft <= 0) {
+        console.log("Better luck next time...");
+        currentWord.letters.forEach(x => {
+            x.guessed = true;
+        })
+        currentWord.displayWord();
+        return true;
+    }
     for (i = 0; i < currentWord.letters.length; i++) {
         if (currentWord.letters[i].guessed === false)
             return false;
     }
+    console.log("You win!");
     return true;
 }
 
 function startGame() {
+    console.log("Fruit & Veggie Word Guess!");
+    guessesLeft = maxGuesses;
     createWord();
     requestGuess();
 }
